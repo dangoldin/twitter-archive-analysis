@@ -1,0 +1,9 @@
+PyYAML==3.10
+distribute==0.6.31
+matplotlib==1.2.0
+nltk==2.0.4
+numpy==1.6.2
+python-dateutil==2.1
+pytz==2012j
+six==1.2.0
+wsgiref==0.1.2
