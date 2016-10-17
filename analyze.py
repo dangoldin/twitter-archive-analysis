@@ -19,25 +19,21 @@ import nltk.corpus
 from nltk import decorators
 import nltk.stem
 
-HEADER = [  'tweet_id', 'in_reply_to_status_id', 'in_reply_to_user_id', 'retweeted_status_id', \
-            'retweeted_status_user_id', 'timestamp', 'source', 'text', 'expanded_urls']
+HEADER = ['tweet_id', 'in_reply_to_status_id', 'in_reply_to_user_id', 'timestamp', 'source', \
+    'text', 'retweeted_status_id', 'retweeted_status_user_id', 'retweeted_status_timestamp', 'expanded_urls']
 HEADER_DICT = dict( (name,i) for i, name in enumerate(HEADER) )
 
 stemmer_func = nltk.stem.snowball.EnglishStemmer().stem
 stopwords = set(nltk.corpus.stopwords.words('english'))
 
 def load_tweets(tweet_dir):
-    tweet_files = os.listdir(tweet_dir)
-    #print header_map
-
     tweets = []
-    for f in tweet_files:
-        file_path = os.path.join(tweet_dir, f)
-        with open(file_path,'r') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            csvreader.next() # Skip header
-            for row in csvreader:
-                tweets.append(row)
+    fp = os.path.join(tweet_dir, 'tweets.csv')
+    with open(fp,'r') as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        csvreader.next() # Skip header
+        for row in csvreader:
+            tweets.append(row)
 
     print 'Loaded %d tweets' % len(tweets)
 
@@ -45,7 +41,7 @@ def load_tweets(tweet_dir):
 
     return tweets
 
-def by_hour(tweets):    
+def by_hour(tweets):
     hours = []
     for tweet in tweets:
         timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
@@ -102,7 +98,7 @@ def by_dow(tweets):
         timestamp = timestamp.astimezone( tzlocal() )
         c[timestamp.strftime('%A')] += 1
     print c.most_common(10)
-    
+
     N = len(dow)
 
     ind = np.arange(N)
@@ -130,7 +126,7 @@ def by_month(tweets):
         timestamp = timestamp.astimezone( tzlocal() )
         c[timestamp.strftime('%Y-%m')] += 1
     print c.most_common(10)
-    
+
     N = len(c)
 
     ind = np.arange(N)  # the x locations for the groups
@@ -217,7 +213,7 @@ def by_month_length(tweets):
         c[timestamp.strftime('%Y-%m')] += 1
         s[timestamp.strftime('%Y-%m')] += len(tweet[ HEADER_DICT['text'] ])
     print c.most_common(10)
-    
+
     N = len(c)
     ind = np.arange(N)
     width = 0.8
@@ -279,7 +275,7 @@ def by_month_type(tweets):
 
     ax.legend( (rects1[0], rects2[0], rects3[0]), ('Tweet', 'RT', 'Reply') )
 
-    fig.set_size_inches(12,6) 
+    fig.set_size_inches(12,6)
     plt.savefig('by-month-type.png', bbox_inches=0)
     plt.show()
 
@@ -362,10 +358,8 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    tweet_dir = os.path.join(options.directory, 'data', 'csv')
+    tweets = load_tweets(options.directory)
 
-    tweets = load_tweets(tweet_dir)
-    
     by_month(tweets)
     by_month_type(tweets)
     by_month_length(tweets)
