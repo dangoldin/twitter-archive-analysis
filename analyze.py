@@ -32,14 +32,9 @@ def load_tweets(tweet_dir):
     with open(fp,'r') as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         csvreader.next() # Skip header
-        for row in csvreader:
-            tweets.append(row)
-
-    print 'Loaded %d tweets' % len(tweets)
-
-    #print tweets[:10]
-
-    return tweets
+        tweets = list(csvreader)
+        print 'Loaded %d tweets' % len(tweets)
+        return tweets
 
 def by_hour(tweets):
     hours = []
@@ -357,6 +352,10 @@ if __name__ == '__main__':
                       help="Twitter archive directory - FILE", metavar="FILE")
 
     (options, args) = parser.parse_args()
+
+    if options.directory is None:
+        print 'You must pass in a directory'
+        exit(1)
 
     tweets = load_tweets(options.directory)
 
