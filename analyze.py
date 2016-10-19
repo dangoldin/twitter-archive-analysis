@@ -26,6 +26,8 @@ HEADER_DICT = dict( (name,i) for i, name in enumerate(HEADER) )
 stemmer_func = nltk.stem.snowball.EnglishStemmer().stem
 stopwords = set(nltk.corpus.stopwords.words('english'))
 
+DEBUG = False
+
 def load_tweets(tweet_dir):
     tweets = []
     fp = os.path.join(tweet_dir, 'tweets.csv')
@@ -81,7 +83,8 @@ def by_hour(tweets):
     plt.title('# of Tweets by Hour')
 
     plt.savefig('by-hour.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
 def by_dow(tweets):
     dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -110,7 +113,8 @@ def by_dow(tweets):
     ax.set_xticklabels( [d[:3] for d in dow] )
 
     plt.savefig('by-dow.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
 def by_month(tweets):
     c = Counter()
@@ -139,7 +143,8 @@ def by_month(tweets):
     ax.set_xticklabels( [ x for i,x in enumerate(sorted(c.keys())) if i % 6 == 0], rotation=30 )
 
     plt.savefig('by-month.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
 def by_month_dow(tweets):
     dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -173,7 +178,8 @@ def by_month_dow(tweets):
     # extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
     # plt.clf()
     # plt.imshow(heatmap, extent=extent)
-    # plt.show()
+    # if DEBUG:
+    #     plt.show()
 
     x = np.array(xs)
     y = np.array(ys)
@@ -195,7 +201,8 @@ def by_month_dow(tweets):
     cb.set_label('# Tweets')
 
     plt.savefig('by-month-dow.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
 def by_month_length(tweets):
     c = Counter()
@@ -225,7 +232,8 @@ def by_month_length(tweets):
     ax.set_xticklabels( [ x for i,x in enumerate(sorted(c.keys())) if i % 6 == 0], rotation=30 )
 
     plt.savefig('by-month-length.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
 def by_month_type(tweets):
     c_total   = Counter()
@@ -272,7 +280,8 @@ def by_month_type(tweets):
 
     fig.set_size_inches(12,6)
     plt.savefig('by-month-type.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
     # Create the stacked version
     width = 0.9
@@ -297,7 +306,8 @@ def by_month_type(tweets):
     ax.legend( (rects1[0], rects2[0], rects3[0]), ('Tweet', 'RT', 'Reply'), loc=4 )
 
     plt.savefig('by-month-type-stacked.png', bbox_inches=0)
-    plt.show()
+    if DEBUG:
+        plt.show()
 
 @decorators.memoize
 def get_words(tweet_text):
