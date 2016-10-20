@@ -38,7 +38,7 @@ def load_tweets(tweet_dir):
         print 'Loaded %d tweets' % len(tweets)
         return tweets
 
-def by_hour(tweets):
+def by_hour(tweets, out_dir):
     hours = []
     for tweet in tweets:
         timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
@@ -82,11 +82,11 @@ def by_hour(tweets):
     plt.ylabel('# Tweets')
     plt.title('# of Tweets by Hour')
 
-    plt.savefig('by-hour.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-hour.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
-def by_dow(tweets):
+def by_dow(tweets, out_dir):
     dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     c = Counter()
     for tweet in tweets:
@@ -112,11 +112,11 @@ def by_dow(tweets):
     ax.set_xticks(ind + 0.5 * width)
     ax.set_xticklabels( [d[:3] for d in dow] )
 
-    plt.savefig('by-dow.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-dow.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
-def by_month(tweets):
+def by_month(tweets, out_dir):
     c = Counter()
     for tweet in tweets:
         timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
@@ -142,11 +142,11 @@ def by_month(tweets):
     ax.set_xticks([ i for i,x in enumerate(sorted(c.keys())) if i % 6 == 0])
     ax.set_xticklabels( [ x for i,x in enumerate(sorted(c.keys())) if i % 6 == 0], rotation=30 )
 
-    plt.savefig('by-month.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-month.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
-def by_month_dow(tweets):
+def by_month_dow(tweets, out_dir):
     dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     # Get the # of week and weekday for each tweet
     data = {}
@@ -200,11 +200,11 @@ def by_month_dow(tweets):
     cb = plt.colorbar()
     cb.set_label('# Tweets')
 
-    plt.savefig('by-month-dow.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-month-dow.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
-def by_month_length(tweets):
+def by_month_length(tweets, out_dir):
     c = Counter()
     s = Counter()
     for tweet in tweets:
@@ -231,11 +231,11 @@ def by_month_length(tweets):
     ax.set_xticks([ i for i,x in enumerate(sorted(c.keys())) if i % 6 == 0])
     ax.set_xticklabels( [ x for i,x in enumerate(sorted(c.keys())) if i % 6 == 0], rotation=30 )
 
-    plt.savefig('by-month-length.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-month-length.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
-def by_month_type(tweets):
+def by_month_type(tweets, out_dir):
     c_total   = Counter()
     c_tweets  = Counter()
     c_rts     = Counter()
@@ -279,7 +279,7 @@ def by_month_type(tweets):
     ax.legend( (rects1[0], rects2[0], rects3[0]), ('Tweet', 'RT', 'Reply') )
 
     fig.set_size_inches(12,6)
-    plt.savefig('by-month-type.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-month-type.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
@@ -305,7 +305,7 @@ def by_month_type(tweets):
 
     ax.legend( (rects1[0], rects2[0], rects3[0]), ('Tweet', 'RT', 'Reply'), loc=4 )
 
-    plt.savefig('by-month-type-stacked.png', bbox_inches=0)
+    plt.savefig(os.path.join(out_dir, 'by-month-type-stacked.png'), bbox_inches=0)
     if DEBUG:
         plt.show()
 
@@ -360,6 +360,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-d", "--dir", dest="directory",
                       help="Twitter archive directory - FILE", metavar="FILE")
+    parser.add_option("-o", "--out", dest="out_directory",
+                      help="Output directory - FILE", metavar="FILE")
 
     (options, args) = parser.parse_args()
 
@@ -367,13 +369,20 @@ if __name__ == '__main__':
         print 'You must pass in a directory'
         exit(1)
 
+    out_dir = options.out_directory
+    if out_dir is None:
+        out_dir = 'out'
+
+    if not os.path.exists(out_dir):
+         os.makedirs(out_dir)
+
     tweets = load_tweets(options.directory)
 
-    by_month(tweets)
-    by_month_type(tweets)
-    by_month_length(tweets)
-    by_month_dow(tweets)
-    by_dow(tweets)
-    by_hour(tweets)
-    word_frequency(tweets)
-    # get_word_clusters(tweets)
+    by_month(tweets, out_dir)
+    by_month_type(tweets, out_dir)
+    by_month_length(tweets, out_dir)
+    by_month_dow(tweets, out_dir)
+    by_dow(tweets, out_dir)
+    by_hour(tweets, out_dir)
+    word_frequency(tweets, out_dir)
+    # get_word_clusters(tweets, out_dir)
