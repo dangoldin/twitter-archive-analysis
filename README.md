@@ -1,8 +1,10 @@
 twitter-archive-analysis
 ========================
 
-Some tools to help analyze the twitter archive.
+A small script that analyzes your Twitter archive.
 
-Take a look at the requirements.txt file to look at the libraries I used. Note that I'm barely using the NLTK library now so you should be able to comment out where it's used without affecting too much of the code.
+You can download your Twitter archive by following the instructions on [https://help.twitter.com/en/managing-your-account/how-to-download-your-twitter-archive](https://help.twitter.com/en/managing-your-account/how-to-download-your-twitter-archive).
 
-You can run the script like so: python analyze.py --dir="/Users/dangoldin/Downloads/tweets"
+Once you have the files unarchived in a directory, you can run the script:
+
+`python analyze.py -j "/Users/dangoldin/Downloads/tweets/tweet.js"`

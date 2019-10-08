@@ -37,6 +37,7 @@ nosetests.xml
 # Temp
 *~
 .DS_Store
+.vscode/
 
 # Private
 out
