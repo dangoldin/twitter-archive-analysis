@@ -2,7 +2,7 @@ import os, csv, re
 
 from optparse import OptionParser
 
-import datetime, pytz
+import datetime, pytz, json
 from dateutil.tz import tzlocal
 
 import numpy as np
@@ -18,41 +18,37 @@ from nltk.cluster import KMeansClusterer, GAAClusterer, euclidean_distance
 import nltk.corpus
 from nltk import decorators
 import nltk.stem
-
-HEADER = ['tweet_id', 'in_reply_to_status_id', 'in_reply_to_user_id', 'timestamp', 'source', \
-    'text', 'retweeted_status_id', 'retweeted_status_user_id', 'retweeted_status_timestamp', 'expanded_urls']
-HEADER_DICT = dict( (name,i) for i, name in enumerate(HEADER) )
+nltk.download('stopwords')
 
 stemmer_func = nltk.stem.snowball.EnglishStemmer().stem
 stopwords = set(nltk.corpus.stopwords.words('english'))
 
 DEBUG = False
 
-def load_tweets(tweet_dir):
-    tweets = []
-    fp = os.path.join(tweet_dir, 'tweets.csv')
-    with open(fp,'r') as csvfile:
-        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        csvreader.next() # Skip header
-        tweets = list(csvreader)
-        print 'Loaded %d tweets' % len(tweets)
+def load_tweets_from_js(js_file):
+    with open(js_file, 'r') as f:
+        data = f.read()
+        data = data.replace('window.YTD.tweet.part0 = ', '')
+        tweets = json.loads(data)
+        for tweet in tweets:
+            ts = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+            ts = ts.replace(tzinfo=pytz.utc)
+            ts = ts.astimezone( tzlocal() )
+            tweet['timestamp'] = ts
+        print('Loaded %d tweets' % len(tweets))
         return tweets
 
 def by_hour(tweets, out_dir):
     hours = []
     for tweet in tweets:
-        timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
-        timestamp = datetime.datetime.strptime(timestamp_str,'%Y-%m-%d %H:%M:%S +0000')
-        timestamp = timestamp.replace(tzinfo=pytz.utc)
-        timestamp = timestamp.astimezone( tzlocal() )
-        hours.append(timestamp.hour)
+        hours.append(tweet['timestamp'].hour)
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     n, bins = np.histogram(hours, range(25))
 
-    print n,bins
+    print(n, bins)
 
     # get the corners of the rectangles for the histogram
     left = np.array(bins[:-1])
@@ -90,12 +86,8 @@ def by_dow(tweets, out_dir):
     dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     c = Counter()
     for tweet in tweets:
-        timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
-        timestamp = datetime.datetime.strptime(timestamp_str,'%Y-%m-%d %H:%M:%S +0000')
-        timestamp = timestamp.replace(tzinfo=pytz.utc)
-        timestamp = timestamp.astimezone( tzlocal() )
-        c[timestamp.strftime('%A')] += 1
-    print c.most_common(10)
+        c[tweet['timestamp'].strftime('%A')] += 1
+    print(c.most_common(10))
 
     N = len(dow)
 
@@ -119,12 +111,8 @@ def by_dow(tweets, out_dir):
 def by_month(tweets, out_dir):
     c = Counter()
     for tweet in tweets:
-        timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
-        timestamp = datetime.datetime.strptime(timestamp_str,'%Y-%m-%d %H:%M:%S +0000')
-        timestamp = timestamp.replace(tzinfo=pytz.utc)
-        timestamp = timestamp.astimezone( tzlocal() )
-        c[timestamp.strftime('%Y-%m')] += 1
-    print c.most_common(10)
+        c[tweet['timestamp'].strftime('%Y-%m')] += 1
+    print(c.most_common(10))
 
     N = len(c)
 
@@ -151,18 +139,14 @@ def by_month_dow(tweets, out_dir):
     # Get the # of week and weekday for each tweet
     data = {}
     for tweet in tweets:
-        timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
-        timestamp = datetime.datetime.strptime(timestamp_str,'%Y-%m-%d %H:%M:%S +0000')
-        timestamp = timestamp.replace(tzinfo=pytz.utc)
-        timestamp = timestamp.astimezone( tzlocal() )
-        weekday = timestamp.strftime('%A')
-        iso_yr, iso_wk, iso_wkday = timestamp.isocalendar()
+        weekday = tweet['timestamp'].strftime('%A')
+        iso_yr, iso_wk, iso_wkday = tweet['timestamp'].isocalendar()
         #key = str(iso_yr) + '-' + str(iso_wk)
-        key = timestamp.strftime('%Y-%m')
+        key = tweet['timestamp'].strftime('%Y-%m')
         if key  not in data:
             data[key] = Counter()
         data[key][weekday] += 1
-    print data
+    print(data)
     # Convert to numpy
     xs = []
     ys = []
@@ -195,7 +179,7 @@ def by_month_dow(tweets, out_dir):
     plt.gca().set_yticklabels( [key for i,key in enumerate(sorted(data.iterkeys())) if i % 6 == 0] )
     plt.gca().set_yticks([i for i,key in enumerate(sorted(data.iterkeys())) if i % 6 == 0])
 
-    print [key for key in sorted(data.iterkeys())]
+    print([key for key in sorted(data.iterkeys())])
 
     cb = plt.colorbar()
     cb.set_label('# Tweets')
@@ -208,13 +192,9 @@ def by_month_length(tweets, out_dir):
     c = Counter()
     s = Counter()
     for tweet in tweets:
-        timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
-        timestamp = datetime.datetime.strptime(timestamp_str,'%Y-%m-%d %H:%M:%S +0000')
-        timestamp = timestamp.replace(tzinfo=pytz.utc)
-        timestamp = timestamp.astimezone( tzlocal() )
-        c[timestamp.strftime('%Y-%m')] += 1
-        s[timestamp.strftime('%Y-%m')] += len(tweet[ HEADER_DICT['text'] ])
-    print c.most_common(10)
+        c[tweet['timestamp'].strftime('%Y-%m')] += 1
+        s[tweet['timestamp'].strftime('%Y-%m')] += len(tweet['full_text'])
+    print(c.most_common(10))
 
     N = len(c)
     ind = np.arange(N)
@@ -242,16 +222,12 @@ def by_month_type(tweets, out_dir):
     c_replies = Counter()
     months  = set()
     for tweet in tweets:
-        timestamp_str = tweet[ HEADER_DICT['timestamp'] ]
-        timestamp = datetime.datetime.strptime(timestamp_str,'%Y-%m-%d %H:%M:%S +0000')
-        timestamp = timestamp.replace(tzinfo=pytz.utc)
-        timestamp = timestamp.astimezone( tzlocal() )
-        key = timestamp.strftime('%Y-%m')
+        key = tweet['timestamp'].strftime('%Y-%m')
         months.add(key)
         c_total[key] += 1
-        if tweet[ HEADER_DICT['in_reply_to_status_id'] ]:
+        if 'in_reply_to_status_id' in tweet:
             c_replies[key] += 1
-        elif tweet[ HEADER_DICT['retweeted_status_id'] ]:
+        elif tweet['retweeted']:
             c_rts[key] += 1
         else:
             c_tweets[key] += 1
@@ -313,20 +289,20 @@ def by_month_type(tweets, out_dir):
 def get_words(tweet_text):
     return [word.lower() for word in re.findall('\w+', tweet_text) if len(word) > 3]
 
-def word_frequency(tweets):
+def word_frequency(tweets, out_dir):
     c = Counter()
     hash_c = Counter()
     at_c = Counter()
     for tweet in tweets:
-        for word in get_words( tweet[ HEADER_DICT['text'] ] ):
+        for word in get_words( tweet['full_text'] ):
             c[ word ] += 1
-        for word in re.findall('@\w+', tweet[ HEADER_DICT['text'] ]):
+        for word in re.findall('@\w+', tweet['full_text']):
             at_c[ word.lower() ] += 1
-        for word in re.findall('\#[\d\w]+', tweet[ HEADER_DICT['text'] ]):
+        for word in re.findall('\#[\d\w]+', tweet['full_text']):
             hash_c[ word.lower() ] += 1
-    print c.most_common(50)
-    print hash_c.most_common(50)
-    print at_c.most_common(50)
+    print(c.most_common(50))
+    print(hash_c.most_common(50))
+    print(at_c.most_common(50))
 
 @decorators.memoize
 def normalize_word(word):
@@ -342,31 +318,33 @@ def vectorspaced(tweet_text, all_words):
 def get_word_clusters(tweets):
     all_words = set()
     for tweet in tweets:
-        for word in get_words( tweet[ HEADER_DICT['text'] ] ):
+        for word in get_words( tweet['full_text'] ):
             all_words.add(word)
     all_words = tuple(all_words)
 
     cluster = GAAClusterer(5)
-    cluster.cluster([vectorspaced( tweet[ HEADER_DICT['text'] ], all_words) for tweet in tweets])
+    cluster.cluster([vectorspaced( tweet['full_text'], all_words) for tweet in tweets])
 
     classified_examples = [
-        cluster.classify(vectorspaced( tweet[ HEADER_DICT['text'] ], all_words)) for tweet in tweets
+        cluster.classify(vectorspaced( tweet['full_text'], all_words)) for tweet in tweets
     ]
 
     for cluster_id, title in sorted(zip(classified_examples, job_titles)):
-        print cluster_id, title
+        print(cluster_id, title)
 
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-d", "--dir", dest="directory",
-                      help="Twitter archive directory - FILE", metavar="FILE")
+                      help="Twitter archive directory", metavar="FILE")
+    parser.add_option("-j", "--js", dest="js_file",
+                      help="Twitter archive JavaScript file", metavar="FILE")
     parser.add_option("-o", "--out", dest="out_directory",
-                      help="Output directory - FILE", metavar="FILE")
+                      help="Output directory", metavar="FILE")
 
     (options, args) = parser.parse_args()
 
-    if options.directory is None:
-        print 'You must pass in a directory'
+    if options.directory is None and options.js_file is None:
+        print('You must pass in a directory or JavaScript archive')
         exit(1)
 
     out_dir = options.out_directory
@@ -376,7 +354,13 @@ if __name__ == '__main__':
     if not os.path.exists(out_dir):
          os.makedirs(out_dir)
 
-    tweets = load_tweets(options.directory)
+    if options.directory:
+        tweets = load_tweets_from_dir(options.directory)
+    elif options.js_file:
+        tweets = load_tweets_from_js(options.js_file)
+    else:
+        print('Should not have gotten here. Need to specify ether directory or JS file')
+        exit(1)
 
     by_month(tweets, out_dir)
     by_month_type(tweets, out_dir)
