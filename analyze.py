@@ -334,8 +334,6 @@ def get_word_clusters(tweets):
 
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-d", "--dir", dest="directory",
-                      help="Twitter archive directory", metavar="FILE")
     parser.add_option("-j", "--js", dest="js_file",
                       help="Twitter archive JavaScript file", metavar="FILE")
     parser.add_option("-o", "--out", dest="out_directory",
@@ -343,8 +341,8 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if options.directory is None and options.js_file is None:
-        print('You must pass in a directory or JavaScript archive')
+    if options.js_file is None:
+        print('You must pass a JavaScript archive')
         exit(1)
 
     out_dir = options.out_directory
@@ -354,13 +352,7 @@ if __name__ == '__main__':
     if not os.path.exists(out_dir):
          os.makedirs(out_dir)
 
-    if options.directory:
-        tweets = load_tweets_from_dir(options.directory)
-    elif options.js_file:
-        tweets = load_tweets_from_js(options.js_file)
-    else:
-        print('Should not have gotten here. Need to specify ether directory or JS file')
-        exit(1)
+    tweets = load_tweets_from_js(options.js_file)
 
     by_month(tweets, out_dir)
     by_month_type(tweets, out_dir)

@@ -7,4 +7,4 @@ You can download your Twitter archive by following the instructions on [https://
 
 Once you have the files unarchived in a directory, you can run the script:
 
-`python analyze.py --dir="/Users/dangoldin/Downloads/tweets"`
+`python analyze.py -j "/Users/dangoldin/Downloads/tweets/tweet.js"`
