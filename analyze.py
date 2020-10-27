@@ -31,7 +31,7 @@ def load_tweets_from_js(js_file):
         data = data.replace('window.YTD.tweet.part0 = ', '')
         tweets = json.loads(data)
         for tweet in tweets:
-            ts = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+            ts = datetime.datetime.strptime(tweet['tweet']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             ts = ts.replace(tzinfo=pytz.utc)
             ts = ts.astimezone( tzlocal() )
             tweet['timestamp'] = ts
@@ -193,7 +193,7 @@ def by_month_length(tweets, out_dir):
     s = Counter()
     for tweet in tweets:
         c[tweet['timestamp'].strftime('%Y-%m')] += 1
-        s[tweet['timestamp'].strftime('%Y-%m')] += len(tweet['full_text'])
+        s[tweet['timestamp'].strftime('%Y-%m')] += len(tweet['tweet']['full_text'])
     print(c.most_common(10))
 
     N = len(c)
@@ -225,9 +225,9 @@ def by_month_type(tweets, out_dir):
         key = tweet['timestamp'].strftime('%Y-%m')
         months.add(key)
         c_total[key] += 1
-        if 'in_reply_to_status_id' in tweet:
+        if 'in_reply_to_status_id' in tweet['tweet']:
             c_replies[key] += 1
-        elif tweet['retweeted']:
+        elif tweet['tweet']['retweeted']:
             c_rts[key] += 1
         else:
             c_tweets[key] += 1
@@ -294,11 +294,11 @@ def word_frequency(tweets, out_dir):
     hash_c = Counter()
     at_c = Counter()
     for tweet in tweets:
-        for word in get_words( tweet['full_text'] ):
+        for word in get_words( tweet['tweet']['full_text'] ):
             c[ word ] += 1
-        for word in re.findall('@\w+', tweet['full_text']):
+        for word in re.findall('@\w+', tweet['tweet']['full_text']):
             at_c[ word.lower() ] += 1
-        for word in re.findall('\#[\d\w]+', tweet['full_text']):
+        for word in re.findall('\#[\d\w]+', tweet['tweet']['full_text']):
             hash_c[ word.lower() ] += 1
     print(c.most_common(50))
     print(hash_c.most_common(50))
@@ -318,15 +318,15 @@ def vectorspaced(tweet_text, all_words):
 def get_word_clusters(tweets):
     all_words = set()
     for tweet in tweets:
-        for word in get_words( tweet['full_text'] ):
+        for word in get_words( tweet['tweet']['full_text'] ):
             all_words.add(word)
     all_words = tuple(all_words)
 
     cluster = GAAClusterer(5)
-    cluster.cluster([vectorspaced( tweet['full_text'], all_words) for tweet in tweets])
+    cluster.cluster([vectorspaced( tweet['tweet']['full_text'], all_words) for tweet in tweets])
 
     classified_examples = [
-        cluster.classify(vectorspaced( tweet['full_text'], all_words)) for tweet in tweets
+        cluster.classify(vectorspaced( tweet['tweet']['full_text'], all_words)) for tweet in tweets
     ]
 
     for cluster_id, title in sorted(zip(classified_examples, job_titles)):
