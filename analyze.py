@@ -1,4 +1,4 @@
-import os, csv, re
+import os, csv, re, sys
 
 from optparse import OptionParser
 
@@ -24,6 +24,14 @@ stemmer_func = nltk.stem.snowball.EnglishStemmer().stem
 stopwords = set(nltk.corpus.stopwords.words('english'))
 
 DEBUG = False
+
+def iterkeys(d):
+    """Python 2/3 compatibility function for dict.iterkeys()"""
+    if sys.version_info >= (3,):
+        return d.keys()
+    else:
+        return d.iterkeys()
+
 
 def load_tweets_from_js(js_file):
     with open(js_file, 'r') as f:
@@ -151,7 +159,7 @@ def by_month_dow(tweets, out_dir):
     xs = []
     ys = []
     a = np.zeros( (7, len(data)) )
-    for i,key in enumerate(sorted(data.iterkeys())):
+    for i,key in enumerate(sorted(iterkeys(data))):
         for j,d in enumerate(dow):
             #a[j,i] = data[key][d]
             for k in range(data[key][d]):
@@ -176,10 +184,10 @@ def by_month_dow(tweets, out_dir):
     plt.xlabel('Day of Week')
     plt.ylabel('Month')
     plt.gca().set_xticklabels( [d[:3] for d in dow] )
-    plt.gca().set_yticklabels( [key for i,key in enumerate(sorted(data.iterkeys())) if i % 6 == 0] )
-    plt.gca().set_yticks([i for i,key in enumerate(sorted(data.iterkeys())) if i % 6 == 0])
+    plt.gca().set_yticklabels( [key for i,key in enumerate(sorted(iterkeys(data))) if i % 6 == 0] )
+    plt.gca().set_yticks([i for i,key in enumerate(sorted(iterkeys(data))) if i % 6 == 0])
 
-    print([key for key in sorted(data.iterkeys())])
+    print([key for key in sorted(iterkeys(data))])
 
     cb = plt.colorbar()
     cb.set_label('# Tweets')
