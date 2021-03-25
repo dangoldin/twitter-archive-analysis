@@ -13,7 +13,7 @@ pyparsing==2.4.2
 PySocks==1.7.1
 python-dateutil==2.8.0
 pytz==2019.3
-PyYAML==5.1.2
+PyYAML==5.4
 requests==2.20.1
 requests-oauthlib==1.2.0
 simplejson==3.16.0
