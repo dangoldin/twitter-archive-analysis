@@ -344,7 +344,7 @@ def normalize_word(word):
 def vectorspaced(tweet_text, all_words):
     components = [normalize_word(word) for word in get_words(tweet_text)]
     return np.array(
-        [word in components and not word in stopwords for word in all_words], np.short
+        [word in components and word not in stopwords for word in all_words], np.short
     )
 
 
@@ -396,13 +396,13 @@ if __name__ == "__main__":
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    tweets = load_tweets_from_js(options.js_file)
+    all_tweets = load_tweets_from_js(options.js_file)
 
-    by_month(tweets, out_dir)
-    by_month_type(tweets, out_dir)
-    by_month_length(tweets, out_dir)
-    by_month_dow(tweets, out_dir)
-    by_dow(tweets, out_dir)
-    by_hour(tweets, out_dir)
-    word_frequency(tweets, out_dir)
+    by_month(all_tweets, out_dir)
+    by_month_type(all_tweets, out_dir)
+    by_month_length(all_tweets, out_dir)
+    by_month_dow(all_tweets, out_dir)
+    by_dow(all_tweets, out_dir)
+    by_hour(all_tweets, out_dir)
+    word_frequency(all_tweets, out_dir)
     # get_word_clusters(tweets, out_dir)
