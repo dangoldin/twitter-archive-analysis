@@ -389,20 +389,20 @@ if __name__ == "__main__":
         print("You must pass a JavaScript archive")
         exit(1)
 
-    out_dir = options.out_directory
-    if out_dir is None:
-        out_dir = "out"
+    output_dir = options.out_directory
+    if output_dir is None:
+        output_dir = "out"
 
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     all_tweets = load_tweets_from_js(options.js_file)
 
-    by_month(all_tweets, out_dir)
-    by_month_type(all_tweets, out_dir)
-    by_month_length(all_tweets, out_dir)
-    by_month_dow(all_tweets, out_dir)
-    by_dow(all_tweets, out_dir)
-    by_hour(all_tweets, out_dir)
-    word_frequency(all_tweets, out_dir)
-    # get_word_clusters(tweets, out_dir)
+    by_month(all_tweets, output_dir)
+    by_month_type(all_tweets, output_dir)
+    by_month_length(all_tweets, output_dir)
+    by_month_dow(all_tweets, output_dir)
+    by_dow(all_tweets, output_dir)
+    by_hour(all_tweets, output_dir)
+    word_frequency(all_tweets, output_dir)
+    # get_word_clusters(all_tweets, output_dir)
