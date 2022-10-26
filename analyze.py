@@ -201,7 +201,7 @@ def by_month_dow(tweets, out_dir):
         [i for i, key in enumerate(sorted(iterkeys(data))) if i % 6 == 0]
     )
 
-    print([key for key in sorted(iterkeys(data))])
+    print(list(sorted(iterkeys(data))))
 
     cb = plt.colorbar()
     cb.set_label("# Tweets")
@@ -258,7 +258,7 @@ def by_month_type(tweets, out_dir):
         else:
             c_tweets[key] += 1
 
-    months = [x for x in sorted(months)]
+    months = list(sorted(months))
     N = len(months)
     ind = np.arange(N)
 
