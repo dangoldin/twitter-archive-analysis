@@ -38,7 +38,7 @@ def iterkeys(d):
 def load_tweets_from_js(js_file):
     with open(js_file, "r") as f:
         data = f.read()
-        data = data.replace("window.YTD.tweet.part0 = ", "")
+        data = data.replace("window.YTD.tweets.part0 = ", "")
         tweets = json.loads(data)
         for tweet in tweets:
             ts = datetime.datetime.strptime(
@@ -159,12 +159,12 @@ def by_month_dow(tweets, out_dir):
     for tweet in tweets:
         weekday = tweet["timestamp"].strftime("%A")
         iso_yr, iso_wk, iso_wkday = tweet["timestamp"].isocalendar()
-        # key = str(iso_yr) + '-' + str(iso_wk)
+        # key = str(iso_yr) + "-" + str(iso_wk)
         key = tweet["timestamp"].strftime("%Y-%m")
         if key not in data:
             data[key] = Counter()
         data[key][weekday] += 1
-    print(data)
+    print(json.dumps(data, indent=2))
     # Convert to numpy
     xs = []
     ys = []
@@ -175,6 +175,7 @@ def by_month_dow(tweets, out_dir):
             for k in range(data[key][d]):
                 xs.append(j)
                 ys.append(i)
+
     # Convert to x,y pairs
     # heatmap, xedges, yedges = np.histogram2d(np.array(xs), np.array(ys), bins=(7,len(data)))
     # extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
@@ -193,7 +194,7 @@ def by_month_dow(tweets, out_dir):
     plt.title("Tweets by Day of Week and Month")
     plt.xlabel("Day of Week")
     plt.ylabel("Month")
-    plt.gca().set_xticklabels([d[:3] for d in dow])
+    # plt.gca().set_xticklabels([d[:3] for d in dow])
     plt.gca().set_yticklabels(
         [key for i, key in enumerate(sorted(iterkeys(data))) if i % 6 == 0]
     )
