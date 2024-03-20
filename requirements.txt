@@ -1,4 +1,4 @@
-black==22.10.0
+black==24.3.0
 backports.functools-lru-cache==1.5
 certifi==2023.7.22
 chardet==5.0.0
