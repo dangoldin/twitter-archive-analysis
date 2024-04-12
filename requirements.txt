@@ -3,7 +3,7 @@ backports.functools-lru-cache==1.5
 certifi==2023.7.22
 chardet==5.0.0
 cycler==0.11.0
-idna==3.4
+idna==3.7
 kiwisolver==1.4.4
 matplotlib==3.6.1
 nltk==3.7
